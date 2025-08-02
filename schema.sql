@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS subjects (
 	FOREIGN KEY (project) REFERENCES projects(project_id)
 );
 
-CREATE TABLE IF NOT EXISTS sample (
+CREATE TABLE IF NOT EXISTS samples (
     sample_id VARCHAR PRIMARY KEY,
     sample_type VARCHAR,
     time_from_treatment_start INT,
