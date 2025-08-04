@@ -1,7 +1,7 @@
 import os
 import sqlite3
-from models import Project, Subject, Sample
 from typing import List, Tuple
+import pandas as pd
 
 class Database:
     """ 
@@ -79,6 +79,19 @@ class Database:
         finally:
             connection.close()
 
+    def _execute_get_query(self, query: str):
+        connection = self._connect()
+        try:
+            cursor = connection.cursor()
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            column_names = [description[0] for description in cursor.description]
+            return rows, column_names
+        except sqlite3.Error as e:
+            raise RuntimeError(f"Failed to fetch data: {e}")
+        finally:
+            connection.close()
+
 
     def add_projects(self, projects: List[Tuple]):
         """ Adds a list of projects to the database """
@@ -94,6 +107,15 @@ class Database:
         """ Adds a list of samples to the database """
         query = "INSERT INTO samples (sample_id, sample_type, time_from_treatment_start, b_cell, cd8_t_cell, cd4_t_cell, nk_cell, monocyte, subject) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         self._insert_many_db_query(query=query, items=samples)
+
+    def get_all_samples(self):
+        """ Queries the database for all the rows in the samples table. Returns the results as a table """
+        query = "SELECT * FROM samples JOIN subjects ON samples.subject = subjects.subject_id JOIN projects ON subjects.project = projects.project_id;"
+        samples, col_names = self._execute_get_query(query)
+        return pd.DataFrame(samples, columns=col_names)
+
+
+
 
 
 
